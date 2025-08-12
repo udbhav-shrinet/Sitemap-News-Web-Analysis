@@ -1,4 +1,5 @@
-Sitemap-Based Comparative News Analysis Dashboard
+# Sitemap-Based Comparative News Analysis Dashboard
+
 A minimalist, dark-themed web application that provides a real-time comparative analysis of news sources by fetching and visualizing data directly from their sitemaps.
 
 ✨ Live Demo
