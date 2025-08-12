@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparative News Analysis Dashboard</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Chart.js and Wordcloud2.js libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #111827;
+            --card-color: #1f2937;
+            --border-color: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --accent-1: #22d3ee; /* Cyan */
+            --accent-2: #f472b6; /* Pink */
+            --accent-3: #a3e635; /* Lime */
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            padding: 2rem 1rem;
+        }
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .card {
+            background-color: var(--card-color);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+        /* --- Header & Form --- */
+        #form-card { text-align: center; border: none; background-color: transparent; }
+        #form-card h1 { font-size: 2.5rem; font-weight: 700; letter-spacing: -1px; }
+        #form-card p { margin-top: 0.5rem; color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 1.5rem; }
+        #newsUrl {
+            width: 100%; padding: 14px 18px; font-size: 1rem;
+            background-color: var(--card-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem; transition: all 0.2s;
+        }
+        #newsUrl:focus { outline: none; border-color: var(--accent-1); box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.2); }
+        button {
+            width: 100%; background-image: linear-gradient(to right, var(--accent-1), #67e8f9); color: var(--bg-color);
+            font-size: 1rem; font-weight: 600; padding: 14px 20px; border: none;
+            border-radius: 0.5rem; cursor: pointer; transition: all 0.2s; margin-top: 1rem;
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(34, 211, 238, 0.2); }
+        
+        /* --- Animation Styling --- */
+        .fade-in {
+            animation: fadeInAnimation 0.7s ease-in-out forwards;
+        }
+        @keyframes fadeInAnimation {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Scorecard Styling --- */
+        #scorecard-section { display: none; gap: 1.5rem; margin-bottom: 2rem; }
+        .source-scorecard-group { border-left: 4px solid; padding-left: 1.5rem; }
+        .source-scorecard-group h2 { font-size: 1.25rem; margin-bottom: 1rem; font-weight: 600; }
+        .scorecard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; }
+        .scorecard { background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 1rem; text-align: center; }
+        .scorecard .value { font-size: 2rem; font-weight: 700; }
+        .scorecard .label { font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.25rem; }
+
+        /* --- Dashboard Layout --- */
+        #dashboard { display: none; grid-template-columns: repeat(3, 1fr); gap: 2rem; grid-template-areas: "timeline timeline wordcloud" "datatable datatable datatable"; }
+        #timeline-card, #wordcloud-card, #datatable-card { grid-area: auto; }
+        #timeline-card { grid-area: timeline; }
+        #wordcloud-card { grid-area: wordcloud; }
+        #datatable-card { grid-area: datatable; }
+
+        .viz-card h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem; }
+        .chart-container { position: relative; height: 350px; width: 100%; }
+        #wordCloudCanvas { width: 100% !important; height: 100% !important; }
+        
+        /* Word Cloud Filters */
+        #wordcloud-filters { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
+        .filter-btn {
+            background-color: var(--border-color); color: var(--text-secondary); border: none;
+            padding: 0.5rem 1rem; border-radius: 2rem; font-size: 0.9rem;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .filter-btn.active { color: var(--bg-color); font-weight: 600; transform: scale(1.05); }
+
+        /* --- Data Table Styling --- */
+        .table-wrapper { max-height: 400px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border-color); }
+        thead th { background-color: #374151; position: sticky; top: 0; font-weight: 600; }
+        tbody tr { transition: background-color 0.2s; }
+        tbody tr:hover { background-color: #374151; }
+        td a { color: var(--text-primary); text-decoration: none; display: block; }
+
+        #loader { display: none; margin: 3rem auto 0; width: 48px; height: 48px; border: 5px solid var(--border-color); border-bottom-color: var(--accent-1); border-radius: 50%; animation: rotation 1s linear infinite; }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-message { text-align: center; padding: 1rem; background-color: #991b1b; color: #fecaca; border: 1px solid #ef4444; border-radius: 0.5rem; font-weight: 500; margin-top: 2rem; }
+
+        /* --- Footer Credit Styling --- */
+        #credit-footer {
+            position: fixed;
+            bottom: 1rem;
+            right: 1.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        #credit-footer:hover {
+            opacity: 1;
+        }
+
+        @media (max-width: 1200px) { #dashboard { grid-template-columns: 1fr; grid-template-areas: "timeline" "wordcloud" "datatable"; } }
+    </style>
+</head>
+<body>
+
+    <main class="container">
+        <section id="form-card" class="card">
+            <h1>Comparative News Analysis</h1>
+            <p>Enter up to 3 news site URLs, separated by commas, for an instant competitive overview.</p>
+            <form id="newsForm">
+                <input type="text" id="newsUrl" placeholder="e.g., reuters.com, apnews.com" required>
+                <button type="submit">Analyze</button>
+            </form>
+        </section>
+
+        <div id="loader"></div>
+        <div id="results-container"></div>
+
+        <section id="scorecard-section"></section>
+        
+        <section id="dashboard">
+            <div id="timeline-card" class="card viz-card">
+                <h2>Publication Timeline (Last 24 Hours)</h2>
+                <div class="chart-container">
+                    <canvas id="timelineChart"></canvas>
+                </div>
+            </div>
+            <div id="wordcloud-card" class="card viz-card">
+                <h2>Trending Topics from Titles</h2>
+                <div id="wordcloud-filters"></div>
+                <div class="chart-container"> <!-- Added container for sizing -->
+                    <canvas id="wordCloudCanvas"></canvas>
+                </div>
+            </div>
+            <div id="datatable-card" class="card viz-card">
+                <h2>Article Feed</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Channel</th>
+                                <th>Article Title</th>
+                                <th>Publication Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="articlesTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- NEW FOOTER ELEMENT -->
+    <div id="credit-footer">
+        By Udbhav Shrinet
+    </div>
+
+    <script>
+        const newsForm = document.getElementById('newsForm');
+        const newsUrlInput = document.getElementById('newsUrl');
+        const resultsContainer = document.getElementById('results-container');
+        const loader = document.getElementById('loader');
+        const scorecardSection = document.getElementById('scorecard-section');
+        const dashboard = document.getElementById('dashboard');
+        let timelineChartInstance;
+        let allArticlesData = [];
+        const sourceColors = ['#22d3ee', '#f472b6', '#a3e635']; // Cyan, Pink, Lime
+
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxSXBPKvT4HxXNig1DiE2D3147l9Syq6BIIcXn9YP1b2Ee8tofTJrZtYZ7FAstG5fB8MA/exec';
+
+        newsForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            loader.style.display = 'block';
+            resultsContainer.innerHTML = '';
+            scorecardSection.style.display = 'none';
+            scorecardSection.innerHTML = '';
+            dashboard.style.display = 'none';
+            if (timelineChartInstance) timelineChartInstance.destroy();
+
+            const urls = newsUrlInput.value.split(',').map(url => url.trim()).filter(url => url).slice(0, 3);
+
+            if (urls.length === 0) {
+                resultsContainer.innerHTML = `<div class="error-message">Please enter at least one valid URL.</div>`;
+                loader.style.display = 'none';
+                return;
+            }
+
+            const fetchPromises = urls.map(url => {
+                let targetUrl = url;
+                if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+                    targetUrl = 'https://' + targetUrl;
+                }
+                const requestUrl = `${API_URL}?url=${encodeURIComponent(targetUrl)}`;
+                return fetch(requestUrl).then(res => res.json());
+            });
+
+            try {
+                const results = await Promise.allSettled(fetchPromises);
+                allArticlesData = [];
+                let hasSuccessfulData = false;
+
+                results.forEach((result, index) => {
+                    const sourceName = new URL(urls[index].startsWith('http') ? urls[index] : `https://${urls[index]}`).hostname.replace('www.', '');
+                    if (result.status === 'fulfilled' && !result.value.error && result.value.data.length > 0) {
+                        hasSuccessfulData = true;
+                        result.value.data.forEach(article => {
+                            article.sourceName = sourceName;
+                            article.sourceColor = sourceColors[index];
+                        });
+                        allArticlesData = allArticlesData.concat(result.value.data);
+                    } else {
+                        const errorReason = result.status === 'rejected' ? result.reason : result.value.error;
+                        const errorDiv = document.createElement('div');
+                        errorDiv.className = 'error-message';
+                        errorDiv.innerHTML = `⚠️ Failed to fetch data for <strong>${sourceName}</strong>: ${errorReason}`;
+                        resultsContainer.appendChild(errorDiv);
+                    }
+                });
+
+                if (hasSuccessfulData) displayDashboard();
+
+            } catch (error) {
+                resultsContainer.innerHTML = `<div class="error-message">⚠️ An unexpected error occurred: ${error.message}</div>`;
+            } finally {
+                loader.style.display = 'none';
+            }
+        });
+
+        function displayDashboard() {
+            scorecardSection.style.display = 'grid';
+            dashboard.style.display = 'grid';
+            scorecardSection.classList.add('fade-in');
+            dashboard.classList.add('fade-in');
+            const sources = [...new Set(allArticlesData.map(a => a.sourceName))];
+            calculateAndDisplayScorecards(sources);
+            createTimelineChart(sources);
+            setupWordCloud(sources);
+            populateTable();
+        }
+
+        function calculateAndDisplayScorecards(sources) {
+            scorecardSection.innerHTML = '';
+            sources.forEach((source, index) => {
+                const sourceArticles = allArticlesData.filter(a => a.sourceName === source);
+                const now = new Date();
+                let countLastHour = 0, countLast5Hours = 0, countLast10Hours = 0;
+                sourceArticles.forEach(article => {
+                    const hoursAgo = (now - new Date(article.publicationTime)) / 36e5;
+                    if (hoursAgo >= 0) {
+                        if (hoursAgo < 1) countLastHour++;
+                        if (hoursAgo < 5) countLast5Hours++;
+                        if (hoursAgo < 10) countLast10Hours++;
+                    }
+                });
+                const group = document.createElement('div');
+                group.className = 'source-scorecard-group';
+                group.style.borderColor = sourceColors[index];
+                group.innerHTML = `
+                    <h2>${source}</h2>
+                    <div class="scorecard-grid">
+                        <div class="scorecard"><div class="value" style="color:${sourceColors[index]}">${countLastHour}</div><div class="label">Last Hour</div></div>
+                        <div class="scorecard"><div class="value" style="color:${sourceColors[index]}">${countLast5Hours}</div><div class="label">Last 5 Hours</div></div>
+                        <div class="scorecard"><div class="value" style="color:${sourceColors[index]}">${countLast10Hours}</div><div class="label">Last 10 Hours</div></div>
+                        <div class="scorecard"><div class="value" style="color:${sourceColors[index]}">${(countLast5Hours / 5).toFixed(1)}</div><div class="label">Avg/Hour (5hr)</div></div>
+                    </div>`;
+                scorecardSection.appendChild(group);
+            });
+        }
+
+        function createTimelineChart(sources) {
+            if (timelineChartInstance) timelineChartInstance.destroy();
+            const now = new Date();
+            const labels = Array.from({length: 24}, (_, i) => {
+                const hour = new Date(now);
+                hour.setHours(now.getHours() - (23 - i));
+                return hour.toLocaleString('en-US', { hour: 'numeric', hour12: true });
+            });
+            const datasets = sources.map((source, index) => {
+                const sourceArticles = allArticlesData.filter(a => a.sourceName === source);
+                const hoursData = Array(24).fill(0);
+                sourceArticles.forEach(article => {
+                    const hoursAgo = Math.floor((now - new Date(article.publicationTime)) / 36e5);
+                    if (hoursAgo >= 0 && hoursAgo < 24) hoursData[23 - hoursAgo]++;
+                });
+                return {
+                    label: source, data: hoursData, borderColor: sourceColors[index],
+                    backgroundColor: `${sourceColors[index]}33`, fill: true, tension: 0.4,
+                };
+            });
+            const ctx = document.getElementById('timelineChart').getContext('2d');
+            timelineChartInstance = new Chart(ctx, {
+                type: 'line', data: { labels, datasets },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, ticks: { precision: 0, color: '#9ca3af' }, grid: { color: '#374151' } },
+                        x: { ticks: { color: '#9ca3af' }, grid: { color: '#374151' } }
+                    },
+                    plugins: { legend: { labels: { color: '#f9fafb' } } }
+                }
+            });
+        }
+        
+        function setupWordCloud(sources) {
+            const filtersContainer = document.getElementById('wordcloud-filters');
+            filtersContainer.innerHTML = '';
+            const createFilterButton = (text, sourceName, color) => {
+                const button = document.createElement('button');
+                button.className = 'filter-btn';
+                button.textContent = text;
+                button.dataset.source = sourceName;
+                button.onclick = () => {
+                    document.querySelectorAll('.filter-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                        btn.style.backgroundColor = 'var(--border-color)';
+                    });
+                    button.classList.add('active');
+                    button.style.backgroundColor = color;
+                    createWordCloud(sourceName);
+                };
+                filtersContainer.appendChild(button);
+                return button;
+            };
+            const allBtn = createFilterButton('All', 'all', '#6b7280');
+            sources.forEach((source, index) => createFilterButton(source, source, sourceColors[index]));
+            allBtn.click();
+        }
+
+        function createWordCloud(sourceFilter) {
+            const articlesToAnalyze = sourceFilter === 'all' ? allArticlesData : allArticlesData.filter(a => a.sourceName === sourceFilter);
+            const wordCloudCanvas = document.getElementById('wordCloudCanvas');
+            const ctx = wordCloudCanvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = wordCloudCanvas.parentElement.getBoundingClientRect(); // Get size from parent
+            wordCloudCanvas.width = rect.width * dpr;
+            wordCloudCanvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+
+            // Clear previous drawing
+            ctx.clearRect(0, 0, wordCloudCanvas.width, wordCloudCanvas.height);
+
+            const stopWords = new Set(['a', 'about', 'above', 'after', 'again', 'against', 'all', 'am', 'an', 'and', 'any', 'are', 'as', 'at', 'be', 'because', 'been', 'before', 'being', 'below', 'between', 'both', 'but', 'by', 'can', 'did', 'do', 'does', 'doing', 'don', 'down', 'during', 'each', 'few', 'for', 'from', 'further', 'had', 'has', 'have', 'having', 'he', 'her', 'here', 'hers', 'herself', 'him', 'himself', 'his', 'how', 'i', 'if', 'in', 'into', 'is', 'it', 'its', 'itself', 'just', 'me', 'more', 'most', 'my', 'myself', 'no', 'nor', 'not', 'now', 'o', 'of', 'off', 'on', 'once', 'only', 'or', 'other', 'our', 'ours', 'ourselves', 'out', 'over', 'own', 's', 'same', 'she', 'should', 'so', 'some', 'such', 't', 'than', 'that', 'the', 'their', 'theirs', 'them', 'themselves', 'then', 'there', 'these', 'they', 'this', 'those', 'through', 'to', 'too', 'under', 'until', 'up', 'very', 'was', 'we', 'were', 'what', 'when', 'where', 'which', 'while', 'who', 'whom', 'why', 'will', 'with', 'you', 'your', 'yours', 'yourself', 'yourselves', 'says', 'news', 'live', 'updates', 'watch', 'video']);
+            const wordCounts = {};
+            const allTitles = articlesToAnalyze.map(article => article.title).join(' ');
+            const words = allTitles.toLowerCase().match(/\b\w+\b/g)?.filter(word => !stopWords.has(word) && isNaN(word)) || [];
+            
+            words.forEach(word => { wordCounts[word] = (wordCounts[word] || 0) + 1; });
+            const wordList = Object.entries(wordCounts).sort((a, b) => b[1] - a[1]).slice(0, 100);
+
+            if (wordList.length > 0) {
+                WordCloud(wordCloudCanvas, { 
+                    list: wordList, 
+                    gridSize: Math.round(16 * wordCloudCanvas.width / 1024), // Adjust spacing
+                    weightFactor: 4, // Make words smaller
+                    fontFamily: 'Inter, sans-serif', 
+                    color: 'random-light', 
+                    shuffle: false, 
+                    rotateRatio: 0.3,
+                    backgroundColor: 'transparent' // Use card background
+                });
+            }
+        }
+
+        function populateTable() {
+            const tableBody = document.getElementById('articlesTableBody');
+            tableBody.innerHTML = '';
+            allArticlesData.sort((a,b) => new Date(b.publicationTime) - new Date(a.publicationTime));
+            for (const article of allArticlesData) {
+                const row = document.createElement('tr');
+                const channelCell = document.createElement('td');
+                channelCell.innerHTML = `<span style="color: ${article.sourceColor}; font-weight: 600;">${article.sourceName}</span>`;
+                row.appendChild(channelCell);
+                const titleCell = document.createElement('td');
+                titleCell.innerHTML = `<a href="${article.url}" target="_blank" rel="noopener noreferrer">${article.title}</a>`;
+                row.appendChild(titleCell);
+                const timeCell = document.createElement('td');
+                timeCell.textContent = new Date(article.publicationTime).toLocaleString();
+                row.appendChild(timeCell);
+                tableBody.appendChild(row);
+            }
+        }
+    </script>
+</body>
+</html>
