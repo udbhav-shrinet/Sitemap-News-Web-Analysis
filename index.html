@@ -540,11 +540,13 @@
             }).join('');
 
             html = html.replace(/<li>/g, '<ul><li>').replace(/<\/li>/g, '</li></ul>').replace(/<\/ul><ul>/g, '');
+            html = html.replace(/<\/ul>\s*<br>\s*<ul>/g, '');
 
-            // Handle paragraphs
-            html = html.split(/<br>\s*<br>/g).map(p => `<p>${p.trim()}</p>`).join('');
+
+            // Handle paragraphs by splitting on double line breaks
+            html = html.split(/<br>\s*<br>/g).map(p => `<p>${p.trim().replace(/<br>/g, '\n')}</p>`).join('');
             
-            return html;
+            return html.replace(/<p>\s*<\/p>/g, ''); // remove empty paragraphs
         }
 
         async function generateAIInsights(sourceFilter) {
