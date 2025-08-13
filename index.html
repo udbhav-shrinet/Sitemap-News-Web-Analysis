@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Comparative News Analysis Dashboard</title>
+    <title>Multi-Platform Analysis Dashboard</title>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,7 +19,6 @@
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-
       gtag('config', 'G-QYT23DZY7C');
     </script>
 
@@ -28,14 +27,10 @@
             --bg-color: #111827;
             --card-color: #1f2937;
             --border-color: #374151;
+            --sidebar-color: #1f2937;
             --text-primary: #f9fafb;
             --text-secondary: #9ca3af;
-            --accent-1: #22d3ee; /* Cyan */
-            --accent-2: #f472b6; /* Pink */
-            --accent-3: #a3e635; /* Lime */
-            --accent-4: #fde047; /* Yellow */
-            --accent-5: #f97316; /* Orange */
-            --accent-6: #8b5cf6; /* Violet */
+            --accent-1: #22d3ee;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
@@ -43,8 +38,68 @@
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-primary);
-            padding: 2rem 1rem;
+            display: flex;
         }
+        
+        /* --- Sidebar Navigation --- */
+        #sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 260px;
+            height: 100vh;
+            background-color: var(--sidebar-color);
+            border-right: 1px solid var(--border-color);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+        #sidebar h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        #sidebar nav {
+            flex-grow: 1;
+        }
+        #sidebar ul {
+            list-style: none;
+        }
+        #sidebar li a {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        #sidebar li a:hover {
+            background-color: #374151;
+            color: var(--text-primary);
+        }
+        #sidebar li a.active {
+            background-color: var(--accent-1);
+            color: var(--bg-color);
+            font-weight: 600;
+        }
+
+        /* --- Main Content Area --- */
+        #main-content {
+            margin-left: 260px;
+            width: calc(100% - 260px);
+            padding: 2rem;
+            overflow-y: auto;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        
         .container {
             width: 100%;
             max-width: 1400px;
@@ -57,82 +112,25 @@
             border: 1px solid var(--border-color);
             margin-bottom: 2rem;
         }
-        /* --- Header & Form --- */
-        #form-card { text-align: center; border: none; background-color: transparent; }
+        #form-card { text-align: center; border: none; background-color: transparent; padding-top: 0; }
         #form-card h1 { font-size: 2.5rem; font-weight: 700; letter-spacing: -1px; }
         #form-card p { margin-top: 0.5rem; color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 1.5rem; }
         
-        /* --- New URL Input UI --- */
-        .url-input-group {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-        #newsUrlInput {
-            flex-grow: 1;
-            padding: 14px 18px; font-size: 1rem;
-            background-color: var(--card-color);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-            border-radius: 0.5rem; transition: all 0.2s;
-        }
+        .url-input-group { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+        #newsUrlInput { flex-grow: 1; padding: 14px 18px; font-size: 1rem; background-color: var(--card-color); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 0.5rem; transition: all 0.2s; }
         #newsUrlInput:focus { outline: none; border-color: var(--accent-1); box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.2); }
-        #addUrlBtn {
-            flex-shrink: 0;
-            background-color: var(--border-color);
-            color: var(--text-primary);
-            font-weight: 600;
-            padding: 0 1.5rem;
-            border: none;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
+        #addUrlBtn { flex-shrink: 0; background-color: var(--border-color); color: var(--text-primary); font-weight: 600; padding: 0 1.5rem; border: none; border-radius: 0.5rem; cursor: pointer; transition: background-color 0.2s; }
         #addUrlBtn:hover { background-color: #4b5563; }
-        #url-tags-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            min-height: 2.5rem;
-            justify-content: center;
-            margin-bottom: 1.5rem;
-        }
-        .url-tag {
-            display: flex;
-            align-items: center;
-            background-color: var(--bg-color);
-            border: 1px solid var(--border-color);
-            padding: 0.5rem 0.75rem;
-            border-radius: 2rem;
-            font-size: 0.9rem;
-            animation: fadeInAnimation 0.3s;
-        }
-        .url-tag .remove-tag {
-            margin-left: 0.5rem;
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            font-size: 1rem;
-            line-height: 1;
-        }
+        #url-tags-container { display: flex; flex-wrap: wrap; gap: 0.5rem; min-height: 2.5rem; justify-content: center; margin-bottom: 1.5rem; }
+        .url-tag { display: flex; align-items: center; background-color: var(--bg-color); border: 1px solid var(--border-color); padding: 0.5rem 0.75rem; border-radius: 2rem; font-size: 0.9rem; animation: fadeInAnimation 0.3s; }
+        .url-tag .remove-tag { margin-left: 0.5rem; background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 1rem; line-height: 1; }
         .url-tag .remove-tag:hover { color: var(--text-primary); }
-
-        #analyzeBtn {
-            width: 100%; background-image: linear-gradient(to right, var(--accent-1), #67e8f9); color: var(--bg-color);
-            font-size: 1rem; font-weight: 600; padding: 14px 20px; border: none;
-            border-radius: 0.5rem; cursor: pointer; transition: all 0.2s;
-        }
+        #analyzeBtn { width: 100%; background-image: linear-gradient(to right, var(--accent-1), #67e8f9); color: var(--bg-color); font-size: 1rem; font-weight: 600; padding: 14px 20px; border: none; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s; }
         #analyzeBtn:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(34, 211, 238, 0.2); }
         
-        /* --- Animation Styling --- */
         .fade-in { animation: fadeInAnimation 0.7s ease-in-out forwards; }
-        @keyframes fadeInAnimation {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeInAnimation { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- Scorecard Styling --- */
         #scorecard-section { display: none; gap: 1.5rem; margin-bottom: 2rem; }
         .source-scorecard-group { border-left: 4px solid; padding-left: 1.5rem; }
         .source-scorecard-group h2 { font-size: 1.25rem; margin-bottom: 1rem; font-weight: 600; }
@@ -141,46 +139,26 @@
         .scorecard .value { font-size: 2rem; font-weight: 700; }
         .scorecard .label { font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.25rem; }
 
-        /* --- Dashboard Layout --- */
-        #dashboard { display: none; grid-template-columns: repeat(3, 1fr); gap: 2rem; grid-template-areas: "timeline timeline pie-chart" "ai-insights ai-insights keyword-table" "datatable datatable datatable"; }
-        #timeline-card, #pie-chart-card, #keyword-table-card, #datatable-card, #ai-insights-card { grid-area: auto; }
+        #dashboard { display: none; grid-template-columns: repeat(3, 1fr); gap: 2rem; grid-template-areas: "timeline timeline pie-chart" "ai-insights ai-insights keyword-table" "category-analysis category-analysis category-analysis" "datatable datatable datatable"; }
+        .viz-card h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem; }
+        .chart-container { position: relative; height: 350px; width: 100%; }
         #timeline-card { grid-area: timeline; }
         #pie-chart-card { grid-area: pie-chart; }
         #ai-insights-card { grid-area: ai-insights; }
         #keyword-table-card { grid-area: keyword-table; }
+        #category-analysis-card { grid-area: category-analysis; }
         #datatable-card { grid-area: datatable; }
-
-        .viz-card h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem; }
-        .chart-container { position: relative; height: 350px; width: 100%; }
         
-        /* Filters */
         .filters-container { display: flex; flex-wrap: nowrap; gap: 0.5rem; margin-bottom: 1.5rem; overflow-x: auto; padding-bottom: 10px; }
-        .filter-btn {
-            background-color: var(--border-color); color: var(--text-secondary); border: none;
-            padding: 0.5rem 1rem; border-radius: 2rem; font-size: 0.9rem;
-            cursor: pointer; transition: all 0.2s; white-space: nowrap;
-        }
+        .filter-btn { background-color: var(--border-color); color: var(--text-secondary); border: none; padding: 0.5rem 1rem; border-radius: 2rem; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
         .filter-btn.active { color: var(--bg-color); font-weight: 600; transform: scale(1.05); }
 
-        /* --- AI Insights Card --- */
-        #ai-summary-content {
-            height: 350px;
-            overflow-y: auto;
-            color: var(--text-secondary);
-            line-height: 1.6;
-        }
+        #ai-summary-content { height: 350px; overflow-y: auto; color: var(--text-secondary); line-height: 1.6; }
         #ai-summary-content p { margin-bottom: 1rem; }
         #ai-summary-content ul { margin-left: 1.5rem; margin-bottom: 1rem; list-style-type: '✨'; padding-left: 1rem;}
         #ai-summary-content li { margin-bottom: 0.5rem; padding-left: 0.5rem;}
-        .ai-loader {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-            font-style: italic;
-        }
+        .ai-loader { display: flex; justify-content: center; align-items: center; height: 100%; font-style: italic; }
 
-        /* --- Data Table Styling --- */
         .table-wrapper { max-height: 350px; overflow-y: auto; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border-color); }
@@ -193,84 +171,143 @@
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .error-message { text-align: center; padding: 1rem; background-color: #991b1b; color: #fecaca; border: 1px solid #ef4444; border-radius: 0.5rem; font-weight: 500; margin-top: 2rem; }
 
-        /* --- Footer Credit Styling --- */
         #credit-footer { position: fixed; bottom: 1rem; right: 1.5rem; font-size: 0.875rem; color: var(--text-secondary); opacity: 0.7; transition: opacity 0.2s; }
         #credit-footer:hover { opacity: 1; }
+        
+        /* --- Paid Feature Styling --- */
+        .paid-feature-container { position: relative; overflow: hidden; }
+        .blurred-content { filter: blur(8px); user-select: none; pointer-events: none; opacity: 0.6; }
+        .placeholder-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+        .paid-feature-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(31, 41, 55, 0.7); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 1rem; }
+        .paid-feature-overlay h2 { font-size: 1.5rem; color: var(--text-primary); }
+        .paid-feature-overlay p { color: var(--text-secondary); }
+        .paid-feature-overlay .mail-link { margin-top: 1rem; padding: 0.5rem 1rem; background-color: var(--accent-1); color: var(--bg-color); text-decoration: none; border-radius: 0.5rem; font-weight: 600; }
 
-        @media (max-width: 1200px) { #dashboard { grid-template-columns: 1fr; grid-template-areas: "timeline" "pie-chart" "ai-insights" "keyword-table" "datatable"; } }
+        @media (max-width: 1200px) { #dashboard { grid-template-columns: 1fr; grid-template-areas: "timeline" "pie-chart" "ai-insights" "keyword-table" "category-analysis" "datatable"; } }
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            #sidebar { position: relative; width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border-color); }
+            #main-content { margin-left: 0; width: 100%; }
+        }
     </style>
 </head>
 <body>
+    <aside id="sidebar">
+        <h1>Dashboard</h1>
+        <nav>
+            <ul>
+                <li><a href="#" class="tab-link active" data-tab="sitemap-analysis">Sitemap Web Analysis</a></li>
+                <li><a href="#" class="tab-link" data-tab="youtube">YouTube</a></li>
+                <li><a href="#" class="tab-link" data-tab="instagram">Instagram</a></li>
+                <li><a href="#" class="tab-link" data-tab="facebook">Facebook</a></li>
+                <li><a href="#" class="tab-link" data-tab="twitter">Twitter</a></li>
+                <li><a href="#" class="tab-link" data-tab="linkedin">LinkedIn</a></li>
+                <li><a href="#" class="tab-link" data-tab="reddit">Reddit</a></li>
+                <li><a href="#" class="tab-link" data-tab="comscore">Comscore</a></li>
+                <li><a href="#" class="tab-link" data-tab="home-page">Home Page Refresh</a></li>
+            </ul>
+        </nav>
+    </aside>
 
-    <main class="container">
-        <section id="form-card" class="card">
-            <h1>Comparative News Analysis</h1>
-            <p>Enter news site URLs below for an instant competitive overview.</p>
-            <form id="newsForm">
-                <div class="url-input-group">
-                    <input type="text" id="newsUrlInput" placeholder="e.g., reuters.com">
-                    <button type="button" id="addUrlBtn">Add</button>
-                </div>
-                <div id="url-tags-container"></div>
-                <button type="submit" id="analyzeBtn">Analyze</button>
-            </form>
-        </section>
+    <main id="main-content">
+        <div id="sitemap-analysis" class="tab-content active">
+            <div class="container">
+                <section id="form-card" class="card">
+                    <h1>Comparative News Analysis</h1>
+                    <p>Enter news site URLs below for an instant competitive overview.</p>
+                    <form id="newsForm">
+                        <div class="url-input-group">
+                            <input type="text" id="newsUrlInput" placeholder="e.g., reuters.com">
+                            <button type="button" id="addUrlBtn">Add</button>
+                        </div>
+                        <div id="url-tags-container"></div>
+                        <button type="submit" id="analyzeBtn">Analyze</button>
+                    </form>
+                </section>
 
-        <div id="loader"></div>
-        <div id="results-container"></div>
+                <div id="loader"></div>
+                <div id="results-container"></div>
 
-        <section id="scorecard-section"></section>
-        
-        <section id="dashboard">
-            <div id="timeline-card" class="card viz-card">
-                <h2>Publication Timeline (Last 24 Hours)</h2>
-                <div class="chart-container">
-                    <canvas id="timelineChart"></canvas>
-                </div>
+                <section id="scorecard-section"></section>
+                
+                <section id="dashboard">
+                    <div id="timeline-card" class="card viz-card">
+                        <h2>Publication Timeline (24h)</h2>
+                        <div class="chart-container">
+                            <canvas id="timelineChart"></canvas>
+                        </div>
+                    </div>
+                    <div id="pie-chart-card" class="card viz-card">
+                        <h2>Article Distribution (24h)</h2>
+                        <div class="chart-container">
+                            <canvas id="distributionPieChart"></canvas>
+                        </div>
+                    </div>
+                    <div id="ai-insights-card" class="card viz-card">
+                        <h2>✨ AI-Powered Insights</h2>
+                        <div id="ai-insights-filters" class="filters-container"></div>
+                        <div id="ai-summary-content"></div>
+                    </div>
+                    <div id="keyword-table-card" class="card viz-card">
+                        <h2>Trending Topics from Titles</h2>
+                        <div id="keyword-filters" class="filters-container"></div>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Keyword</th>
+                                        <th>Frequency</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="keywordTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="category-analysis-card" class="card viz-card">
+                        <h2>Category Trending</h2>
+                        <div id="category-filters" class="filters-container"></div>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>Source</th>
+                                        <th>Frequency</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="categoryTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="datatable-card" class="card viz-card">
+                        <h2>Recent Article Feed</h2>
+                        <div id="article-feed-filters" class="filters-container"></div>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Channel</th>
+                                        <th>Article Title</th>
+                                        <th>Publication Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="articlesTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
             </div>
-            <div id="pie-chart-card" class="card viz-card">
-                <h2>Article Distribution (24h)</h2>
-                <div class="chart-container">
-                    <canvas id="distributionPieChart"></canvas>
-                </div>
-            </div>
-            <div id="ai-insights-card" class="card viz-card">
-                <h2>✨ AI-Powered Insights</h2>
-                <div id="ai-insights-filters" class="filters-container"></div>
-                <div id="ai-summary-content"></div>
-            </div>
-            <div id="keyword-table-card" class="card viz-card">
-                <h2>Trending Topics from Titles</h2>
-                <div id="keyword-filters" class="filters-container"></div>
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Keyword</th>
-                                <th>Frequency</th>
-                            </tr>
-                        </thead>
-                        <tbody id="keywordTableBody"></tbody>
-                    </table>
-                </div>
-            </div>
-            <div id="datatable-card" class="card viz-card">
-                <h2>Article Feed</h2>
-                <div id="article-feed-filters" class="filters-container"></div>
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Channel</th>
-                                <th>Article Title</th>
-                                <th>Publication Time</th>
-                            </tr>
-                        </thead>
-                        <tbody id="articlesTableBody"></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
+        </div>
+
+        <!-- Placeholder content for other tabs -->
+        <div id="youtube" class="tab-content"><div class="container"><div class="card paid-feature-container"><div class="blurred-content"><h1>YouTube Analysis</h1><div class="placeholder-grid"><div class="chart-container"><canvas id="youtube-placeholder-1"></canvas></div><div class="chart-container"><canvas id="youtube-placeholder-2"></canvas></div><div class="chart-container"><canvas id="youtube-placeholder-3"></canvas></div><div class="chart-container"><canvas id="youtube-placeholder-4"></canvas></div></div></div><div class="paid-feature-overlay"><h2>Paid Feature</h2><p>Please mail here</p><a href="mailto:nexidata@gmail.com" class="mail-link">nexidata@gmail.com</a></div></div></div></div>
+        <div id="instagram" class="tab-content"><div class="container"><div class="card paid-feature-container"><div class="blurred-content"><h1>Instagram Analysis</h1><div class="placeholder-grid"><div class="chart-container"><canvas id="instagram-placeholder-1"></canvas></div><div class="chart-container"><canvas id="instagram-placeholder-2"></canvas></div><div class="chart-container"><canvas id="instagram-placeholder-3"></canvas></div><div class="chart-container"><canvas id="instagram-placeholder-4"></canvas></div></div></div><div class="paid-feature-overlay"><h2>Paid Feature</h2><p>Please mail here</p><a href="mailto:nexidata@gmail.com" class="mail-link">nexidata@gmail.com</a></div></div></div></div>
+        <div id="facebook" class="tab-content"><div class="container"><div class="card paid-feature-container"><div class="blurred-content"><h1>Facebook Analysis</h1><div class="placeholder-grid"><div class="chart-container"><canvas id="facebook-placeholder-1"></canvas></div><div class="chart-container"><canvas id="facebook-placeholder-2"></canvas></div><div class="chart-container"><canvas id="facebook-placeholder-3"></canvas></div><div class="chart-container"><canvas id="facebook-placeholder-4"></canvas></div></div></div><div class="paid-feature-overlay"><h2>Paid Feature</h2><p>Please mail here</p><a href="mailto:nexidata@gmail.com" class="mail-link">nexidata@gmail.com</a></div></div></div></div>
+        <div id="twitter" class="tab-content"><div class="container"><div class="card paid-feature-container"><div class="blurred-content"><h1>Twitter Analysis</h1><div class="placeholder-grid"><div class="chart-container"><canvas id="twitter-placeholder-1"></canvas></div><div class="chart-container"><canvas id="twitter-placeholder-2"></canvas></div><div class="chart-container"><canvas id="twitter-placeholder-3"></canvas></div><div class="chart-container"><canvas id="twitter-placeholder-4"></canvas></div></div></div><div class="paid-feature-overlay"><h2>Paid Feature</h2><p>Please mail here</p><a href="mailto:nexidata@gmail.com" class="mail-link">nexidata@gmail.com</a></div></div></div></div>
+        <div id="linkedin" class="tab-content"><div class="container"><div class="card paid-feature-container"><div class="blurred-content"><h1>LinkedIn Analysis</h1><div class="placeholder-grid"><div class="chart-container"><canvas id="linkedin-placeholder-1"></canvas></div><div class="chart-container"><canvas id="linkedin-placeholder-2"></canvas></div><div class="chart-container"><canvas id="linkedin-placeholder-3"></canvas></div><div class="chart-container"><canvas id="linkedin-placeholder-4"></canvas></div></div></div><div class="paid-feature-overlay"><h2>Paid Feature</h2><p>Please mail here</p><a href="mailto:nexidata@gmail.com" class="mail-link">nexidata@gmail.com</a></div></div></div></div>
+        <div id="reddit" class="tab-content"><div class="container"><div class="card paid-feature-container"><div class="blurred-content"><h1>Reddit Analysis</h1><div class="placeholder-grid"><div class="chart-container"><canvas id="reddit-placeholder-1"></canvas></div><div class="chart-container"><canvas id="reddit-placeholder-2"></canvas></div><div class="chart-container"><canvas id="reddit-placeholder-3"></canvas></div><div class="chart-container"><canvas id="reddit-placeholder-4"></canvas></div></div></div><div class="paid-feature-overlay"><h2>Paid Feature</h2><p>Please mail here</p><a href="mailto:nexidata@gmail.com" class="mail-link">nexidata@gmail.com</a></div></div></div></div>
+        <div id="comscore" class="tab-content"><div class="container"><div class="card paid-feature-container"><div class="blurred-content"><h1>Comscore Analysis</h1><div class="placeholder-grid"><div class="chart-container"><canvas id="comscore-placeholder-1"></canvas></div><div class="chart-container"><canvas id="comscore-placeholder-2"></canvas></div><div class="chart-container"><canvas id="comscore-placeholder-3"></canvas></div><div class="chart-container"><canvas id="comscore-placeholder-4"></canvas></div></div></div><div class="paid-feature-overlay"><h2>Paid Feature</h2><p>Please mail here</p><a href="mailto:nexidata@gmail.com" class="mail-link">nexidata@gmail.com</a></div></div></div></div>
+        <div id="home-page" class="tab-content"><div class="container"><div class="card paid-feature-container"><div class="blurred-content"><h1>Home Page Refresh</h1><div class="placeholder-grid"><div class="chart-container"><canvas id="home-page-placeholder-1"></canvas></div><div class="chart-container"><canvas id="home-page-placeholder-2"></canvas></div><div class="chart-container"><canvas id="home-page-placeholder-3"></canvas></div><div class="chart-container"><canvas id="home-page-placeholder-4"></canvas></div></div></div><div class="paid-feature-overlay"><h2>Paid Feature</h2><p>Please mail here</p><a href="mailto:nexidata@gmail.com" class="mail-link">nexidata@gmail.com</a></div></div></div></div>
     </main>
 
     <div id="credit-footer">
@@ -278,6 +315,26 @@
     </div>
 
     <script>
+        // --- TAB SWITCHING LOGIC ---
+        const tabLinks = document.querySelectorAll('.tab-link');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetTab = e.target.getAttribute('data-tab');
+                if (!targetTab) return; 
+
+                tabLinks.forEach(link => link.classList.remove('active'));
+                e.target.classList.add('active');
+
+                tabContents.forEach(content => {
+                    content.classList.toggle('active', content.id === targetTab);
+                });
+            });
+        });
+        
+        // --- SITEMAP ANALYSIS LOGIC ---
         const newsForm = document.getElementById('newsForm');
         const newsUrlInput = document.getElementById('newsUrlInput');
         const addUrlBtn = document.getElementById('addUrlBtn');
@@ -385,6 +442,7 @@
             createTimelineChart(sources);
             createDistributionPieChart(sources);
             setupKeywordFilters(sources);
+            setupCategoryFilters(sources);
             setupArticleFeedFilters(sources);
             setupAIInsights(sources);
         }
@@ -394,13 +452,12 @@
             sources.forEach((source, index) => {
                 const sourceArticles = allArticlesData.filter(a => a.sourceName === source);
                 const now = new Date();
-                let countLastHour = 0, countLast5Hours = 0, countLast10Hours = 0, countLast12Hours = 0;
+                let countLastHour = 0, countLast6Hours = 0, countLast12Hours = 0;
                 sourceArticles.forEach(article => {
                     const hoursAgo = (now - new Date(article.publicationTime)) / 36e5;
                     if (hoursAgo >= 0) {
                         if (hoursAgo < 1) countLastHour++;
-                        if (hoursAgo < 5) countLast5Hours++;
-                        if (hoursAgo < 10) countLast10Hours++;
+                        if (hoursAgo < 6) countLast6Hours++;
                         if (hoursAgo < 12) countLast12Hours++;
                     }
                 });
@@ -411,8 +468,8 @@
                     <h2>${source}</h2>
                     <div class="scorecard-grid">
                         <div class="scorecard"><div class="value" style="color:${sourceColors[index % sourceColors.length]}">${countLastHour}</div><div class="label">Articles in Last Hour</div></div>
-                        <div class="scorecard"><div class="value" style="color:${sourceColors[index % sourceColors.length]}">${countLast5Hours}</div><div class="label">Articles in Last 5 Hours</div></div>
-                        <div class="scorecard"><div class="value" style="color:${sourceColors[index % sourceColors.length]}">${countLast10Hours}</div><div class="label">Articles in Last 10 Hours</div></div>
+                        <div class="scorecard"><div class="value" style="color:${sourceColors[index % sourceColors.length]}">${countLast6Hours}</div><div class="label">Articles in Last 6 Hours</div></div>
+                        <div class="scorecard"><div class="value" style="color:${sourceColors[index % sourceColors.length]}">${countLast12Hours}</div><div class="label">Articles in Last 12 Hours</div></div>
                         <div class="scorecard"><div class="value" style="color:${sourceColors[index % sourceColors.length]}">${(countLast12Hours / 12).toFixed(1)}</div><div class="label">Avg/Hour (12hr)</div></div>
                     </div>`;
                 scorecardSection.appendChild(group);
@@ -526,12 +583,15 @@
             setupFilterButtons('ai-insights-filters', sources, generateAIInsights);
         }
 
+        function setupCategoryFilters(sources) {
+            setupFilterButtons('category-filters', sources, createCategoryAnalysis);
+        }
+
         function simpleMarkdownToHTML(text) {
             let html = text
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
-                .replace(/\*(.*?)\*/g, '<em>$1</em>');      // Italics
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') 
+                .replace(/\*(.*?)\*/g, '<em>$1</em>');      
 
-            // Handle lists
             html = html.split('\n').map(line => {
                 if (line.trim().startsWith('•') || line.trim().startsWith('*') || line.trim().startsWith('-')) {
                     return `<li>${line.trim().substring(1).trim()}</li>`;
@@ -542,11 +602,9 @@
             html = html.replace(/<li>/g, '<ul><li>').replace(/<\/li>/g, '</li></ul>').replace(/<\/ul><ul>/g, '');
             html = html.replace(/<\/ul>\s*<br>\s*<ul>/g, '');
 
-
-            // Handle paragraphs by splitting on double line breaks
             html = html.split(/<br>\s*<br>/g).map(p => `<p>${p.trim().replace(/<br>/g, '\n')}</p>`).join('');
             
-            return html.replace(/<p>\s*<\/p>/g, ''); // remove empty paragraphs
+            return html.replace(/<p>\s*<\/p>/g, '');
         }
 
         async function generateAIInsights(sourceFilter) {
@@ -614,6 +672,50 @@
                 });
             }
         }
+        
+        function createCategoryAnalysis(sourceFilter = 'all') {
+            const articlesToAnalyze = sourceFilter === 'all' ? allArticlesData : allArticlesData.filter(a => a.sourceName === sourceFilter);
+            const tableBody = document.getElementById('categoryTableBody');
+            tableBody.innerHTML = '';
+            const categoryCounts = {};
+
+            articlesToAnalyze.forEach(article => {
+                try {
+                    const url = new URL(article.url);
+                    const pathParts = url.pathname.split('/').filter(part => part && !part.endsWith('.html') && !part.endsWith('.cms') && isNaN(part));
+                    if (pathParts.length > 0) {
+                        const category = pathParts[0];
+                        const source = article.sourceName;
+                        if (!categoryCounts[source]) categoryCounts[source] = {};
+                        categoryCounts[source][category] = (categoryCounts[source][category] || 0) + 1;
+                    }
+                } catch (e) { /* ignore invalid URLs */ }
+            });
+
+            const categoryList = [];
+            for (const source in categoryCounts) {
+                for (const category in categoryCounts[source]) {
+                    categoryList.push({
+                        source: source,
+                        category: category,
+                        count: categoryCounts[source][category],
+                        color: allArticlesData.find(a => a.sourceName === source)?.sourceColor || '#ffffff'
+                    });
+                }
+            }
+
+            categoryList.sort((a, b) => b.count - a.count);
+
+            categoryList.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.category}</td>
+                    <td><span style="color: ${item.color}; font-weight: 600;">${item.source}</span></td>
+                    <td>${item.count}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
 
         function populateTable(sourceFilter = 'all') {
             const articlesToDisplay = sourceFilter === 'all' ? allArticlesData : allArticlesData.filter(a => a.sourceName === sourceFilter);
@@ -636,6 +738,43 @@
                 tableBody.appendChild(row);
             }
         }
+
+        // --- Placeholder Chart Drawing ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const createPlaceholderChart = (canvasId, type) => {
+                const ctx = document.getElementById(canvasId)?.getContext('2d');
+                if (!ctx) return;
+
+                const labels = ['A', 'B', 'C', 'D', 'E'];
+                const data = {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Sample Data',
+                        data: labels.map(() => Math.random() * 20),
+                        backgroundColor: ['#22d3ee', '#f472b6', '#a3e635', '#fde047', '#f97316', '#8b5cf6'],
+                        borderColor: '#1f2937',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: type === 'line'
+                    }]
+                };
+
+                new Chart(ctx, {
+                    type: type,
+                    data: data,
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: type !== 'pie' && type !== 'doughnut' }, y: { display: type !== 'pie' && type !== 'doughnut' } } }
+                });
+            };
+
+            const placeholderTabs = ['youtube', 'instagram', 'facebook', 'twitter', 'linkedin', 'reddit', 'comscore', 'home-page'];
+            const chartTypes = ['bar', 'line', 'pie', 'doughnut'];
+
+            placeholderTabs.forEach(tab => {
+                for (let i = 1; i <= 4; i++) {
+                    createPlaceholderChart(`${tab}-placeholder-${i}`, chartTypes[i-1]);
+                }
+            });
+        });
     </script>
 </body>
 </html>
